@@ -27,6 +27,7 @@ def hotel_graph(filepath):
                 if not row:
                     continue
                 hotel_name = row[0]
+                rating = float(row[1])
                 landmark = row[6].strip()
                 distance = row[7]
 
@@ -35,7 +36,7 @@ def hotel_graph(filepath):
                 if landmark not in graph:
                     graph[landmark] = []
 
-                graph[landmark].append((hotel_name, r_distance))
+                graph[landmark].append((hotel_name, r_distance, rating))
     except FileNotFoundError:
         messagebox.showerror("Error", "File not found")
         return None
@@ -52,7 +53,7 @@ def bfs(graph, start):
             visited.add(node)
             if node in graph:
                 # Sort nearest first
-                sorted_hotels = sorted(graph[node], key=lambda x: x[1])
+                sorted_hotels = sorted(graph[node], key=lambda x: x[1] - (x[2] * 100))
                 result.extend(sorted_hotels)
     return result
 
@@ -67,7 +68,7 @@ def dfs(graph, start):
             visited.add(node)
             if node in graph:
                 # Sort furthest first
-                sorted_hotels = sorted(graph[node], key=lambda x: x[1], reverse=True)
+                sorted_hotels = sorted(graph[node], key=lambda x: x[1] - (x[2] * 100), reverse=True)
                 result.extend(sorted_hotels)
     return result
 
@@ -75,13 +76,13 @@ def dfs(graph, start):
 class hotel:
     def __init__(self, root):
         self.root = root
-        self.root.title("Nearest Hotel from Certain Landmark Finder")
+        self.root.title("Best Hotel from Certain Landmark Finder")
         self.root.geometry("1000x700")
 
         main_frame = ttk.Frame(self.root, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        title_label = ttk.Label(main_frame, text="Nearest Hotel Locator", font=("Arial", 24, "bold"), anchor="center")
+        title_label = ttk.Label(main_frame, text="Best Hotel Locator", font=("Arial", 24, "bold"), anchor="center")
         title_label.pack(pady=(0, 20))
 
 
@@ -156,9 +157,9 @@ class hotel:
             results = dfs(self.graph, landmark)
 
         if results:
-            output_text = f"These are the nearest hotels from '{landmark}' searched using {method.upper()}:\n\n"
-            for hotel_name, distance in results:
-                output_text += f"- {hotel_name} ({distance:.0f} meter)\n"
+            output_text = f"These are the best hotels from '{landmark}' searched using {method.upper()}:\n\n"
+            for hotel_name, distance, rating in results:
+                output_text += f"- {hotel_name} ({distance:.0f} meter | rating {rating})\n"
         else:
             output_text = "Nearest hotels not found."
 
